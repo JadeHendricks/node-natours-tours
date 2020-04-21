@@ -1,0 +1,22 @@
+{
+  "name": "natours",
+  "version": "1.0.0",
+  "description": "Learning node, express and mongodb",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JadeHendricks/node-natours-tours.git"
+  },
+  "author": "Jade Hendricks",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JadeHendricks/node-natours-tours/issues"
+  },
+  "homepage": "https://github.com/JadeHendricks/node-natours-tours#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
