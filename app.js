@@ -1,12 +1,20 @@
 const fileSystem = require("fs");
 const express = require("express");
+const morgan = require("morgan");
 //upon calling express() it will give us a bunch of methods to use
 const app = express();
 
 //middleware 
+app.use(morgan("dev"));
 //a function that can modify the incoming request data
 //express. json() is a method inbuilt in express to recognize the incoming Request Object as a JSON Object so we can access the req.body
 app.use(express.json());
+
+app.use((req, res, next) => {
+  console.log("Hello from the middleware");
+  next();
+});
+
 
 //blocking code
 const tours = JSON.parse(fileSystem.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`));
