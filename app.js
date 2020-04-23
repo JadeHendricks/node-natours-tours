@@ -6,7 +6,10 @@ const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
 
 //middleware 
-app.use(morgan("dev"));
+console.log()
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
 //a function that can modify the incoming request data
 //express. json() is a method inbuilt in express to recognize the incoming Request Object as a JSON Object so we can access the req.body
 app.use(express.json());
