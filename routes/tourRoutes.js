@@ -5,16 +5,14 @@ const {
   createTour, 
   getTour, 
   updateTour, 
-  deleteTour,
-  checkID,
-  checkBody} = require("../controllers/tourController");
+  deleteTour} = require("../controllers/tourController");
 
-router.param("id", checkID);
+// router.param("id", checkID);
 
 router
   .route("/")
   .get(getAllTours)
-  .post(checkBody, createTour);
+  .post(createTour);
 
 router
   .route("/:id")
