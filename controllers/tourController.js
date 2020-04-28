@@ -43,7 +43,7 @@ exports.getAllTours = async (req, res) => {
       query = query.sort("-createdAt");
     }
 
-    // 3) Field limitind
+    // 3) Field limiting
     if (req.query.fields) {
       //mongo requests the names to be a string and seperated by spaces
       const fields = req.query.fields.split(",").join(" ");
@@ -52,6 +52,20 @@ exports.getAllTours = async (req, res) => {
     } else {
       //using a - in select is excluding
       query = query.select("-__v");
+    }
+
+    // 4) pagination
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    //calculation skip to add to the skip method
+    const skip = (page - 1) * limit;
+    //page=3&limit=10, 1-10, page 1, 11 - 20, page 2, 12 - 30, page 3
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      //this is going to return the number of documents
+      const numberOfTours = await Tour.countDocuments();
+      if (skip >= numberOfTours) throw new Error("This page does not exsist");
     }
 
     const tours = await query;
