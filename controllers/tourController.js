@@ -7,11 +7,18 @@ exports.getAllTours = async (req, res) => {
   // console.log(req.query);
   try {
     //1A) Filtering
+        // const tours = await Tour.find()
+    //   .where("duration")
+    //   .equals(5)
+    //   .where("difficulty")
+    //   .equals("easy");
     //creating a hardcopy and not a reference
     const queryObj = {...req.query};
     const excludedFields = ["page", "sort", "limit", "fields"];
     //looping through here to remove the excluded files from the queryObj
     excludedFields.forEach(element => delete queryObj[element]);
+
+
 
     //1B) advanced Filtering
     //convert the object to a string and replace the gte, gt, lte,le
@@ -21,8 +28,11 @@ exports.getAllTours = async (req, res) => {
     //get all tours from the database
     let query = Tour.find(JSON.parse(queryString));
 
+
+
     // 2) Sorting
     if (req.query.sort) {
+      //mongo requests the names to be a string and seperated by spaces
       const sortBy = req.query.sort.split(',').join(" ");
       // console.log("req.query", req.query);
       // console.log("sortBy", sortBy);
@@ -33,12 +43,16 @@ exports.getAllTours = async (req, res) => {
       query = query.sort("-createdAt");
     }
 
-
-    // const tours = await Tour.find()
-    //   .where("duration")
-    //   .equals(5)
-    //   .where("difficulty")
-    //   .equals("easy");
+    // 3) Field limitind
+    if (req.query.fields) {
+      //mongo requests the names to be a string and seperated by spaces
+      const fields = req.query.fields.split(",").join(" ");
+      //select includes
+      query = query.select(fields);
+    } else {
+      //using a - in select is excluding
+      query = query.select("-__v");
+    }
 
     const tours = await query;
 
