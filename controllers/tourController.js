@@ -2,6 +2,14 @@ const Tour = require("../models/tourModel");
 //Blocking Code - Testing
 // const tours = JSON.parse(fileSystem.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`));
 
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = "-ratingsAverage,price";
+  req.query.fields = "name,price,ratingsAverage,summary,difficulty";
+  
+  next();
+}
+
 exports.getAllTours = async (req, res) => {
   //gets all the params in the URL and stores it in an object
   // console.log(req.query);
