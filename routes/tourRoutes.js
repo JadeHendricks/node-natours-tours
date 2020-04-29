@@ -4,6 +4,7 @@ const {
   getAllTours,
   aliasTopTours, 
   getTourStats,
+  getMonthlyPlan,
   createTour, 
   getTour, 
   updateTour, 
@@ -13,6 +14,8 @@ const {
 
 router.route("/top-5-tours").get(aliasTopTours, getAllTours);
 router.route("/top-stats").get(getTourStats);
+router.route("/monthly-plan/:year").get(getMonthlyPlan);
+
 
 router
   .route("/")
