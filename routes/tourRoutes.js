@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getAllTours,
   aliasTopTours, 
+  getTourStats,
   createTour, 
   getTour, 
   updateTour, 
@@ -10,7 +11,8 @@ const {
 
 // router.param("id", checkID);
 
-router.route("/top-5-tours").get(aliasTopTours, getAllTours)
+router.route("/top-5-tours").get(aliasTopTours, getAllTours);
+router.route("/top-stats").get(getTourStats);
 
 router
   .route("/")
