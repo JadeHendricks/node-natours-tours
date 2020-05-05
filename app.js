@@ -1,5 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
+const AppError = require("./utilities/appError");
+const globalErrorHandler = require("./controllers/errorController");
 //upon calling express() it will give us a bunch of methods to use
 const app = express();
 const tourRouter = require("./routes/tourRoutes");
@@ -18,5 +20,14 @@ app.use(express.static(`${__dirname}/public`));
 //this is know as mounting the router
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+
+//this will only work if it did not reach any of our routers above, because this runs after.
+//handle all http methods in one handler
+app.all("*", (req, res, next) => {
+    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+//if you pass it 4 parametres, express will automatically know it is a error handling middleware
+app.use(globalErrorHandler);
 
 module.exports = app;
