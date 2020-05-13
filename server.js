@@ -1,5 +1,13 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+
+process.on('uncaughtException', (err) => {
+  console.log('UNCAUGHT EXCEPTION, Shutting down...');
+  console.log(err.name, err.message);
+  // give the server some time to finish all requests that are still pending
+  process.exit(1);
+});
+
 //only needs to happen once to use globally and before app
 // console.log(process.env);
 dotenv.config({ path: './config.env' });
