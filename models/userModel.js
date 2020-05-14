@@ -57,6 +57,17 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+//update changedPasswordAt property to right now for user
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+
+  //we use -1000 here just incase saving to the DB is abit slower than issuing the jwt,
+  //making passwordChangedAt to be sometimes set after the json webtoken has been created,
+  // and that will not allow the user to login (passwordChangedAt - jwttimestamp)
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
 //instance method
 // a method that's going to be available in all documents of user
 //Check if password received and password in the DB matches
