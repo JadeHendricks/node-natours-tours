@@ -18,6 +18,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
+    role: req.body.role,
   });
 
   //creating a token using the users ID
@@ -102,3 +103,19 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+
+// example of how to add arguments into a middleware function
+//using a closure
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    //roles is an array, using rest parameter from ES6
+    // we can use req.user because protect runs before this middleware and we set this req.user = currentUser;
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+
+    next();
+  };
+};
