@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema({
       message: 'Passwords are not the same',
     },
   },
+  passwordChangedAt: Date,
 });
 
 //mongoose middleware
@@ -50,12 +51,29 @@ userSchema.pre('save', async function (next) {
 
 //instance method
 // a method that's going to be available in all documents of user
+//Check if password received and password in the DB matches
 userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
 ) {
   //this points to the current document, but password is not available because of select: false
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+//checking to see whether the user has changed the password after recieving the Token
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  //checks if that property exists for the user
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    console.log(changedTimestamp, JWTTimestamp);
+    return JWTTimestamp < changedTimestamp;
+  }
+
+  //false means not changed
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);
