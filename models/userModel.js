@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minLength: 8,
+    select: false,
   },
   passwordConfirm: {
     type: String,
@@ -46,6 +47,16 @@ userSchema.pre('save', async function (next) {
   this.passwordConfirm = undefined; //DELETE - only needed for validation, required input but not required in the db
   next();
 });
+
+//instance method
+// a method that's going to be available in all documents of user
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  //this points to the current document, but password is not available because of select: false
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;
