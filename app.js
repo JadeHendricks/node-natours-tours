@@ -4,6 +4,8 @@ const AppError = require('./utilities/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
 //upon calling express() it will give us a bunch of methods to use
 const app = express();
 const tourRouter = require('./routes/tourRoutes');
@@ -36,6 +38,15 @@ app.use('/api', limiter);
 //a function that can modify the incoming request data
 //express. json() is a method inbuilt in express to recognize the incoming Request Object as a JSON Object so we can access the req.body
 app.use(express.json({ limit: '10kb' })); //will not accept a body bigger than 10kb
+
+//Data sanitization against noSql query injection
+//looks at the request body, request query string and also at request.params and will filter out all the $ and dots
+//returns a middleware function
+app.use(mongoSanitize());
+
+//Data sanitization against XSS
+//prevents malicious html with some js attached to it, converts all those html symbols
+app.use(xss());
 
 //serving static files
 app.use(express.static(`${__dirname}/public`));
