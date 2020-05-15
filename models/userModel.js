@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minLength: 8,
-    select: false,
+    select: false, //hide this from the output/user - only visible in the DB
   },
   passwordConfirm: {
     type: String,
@@ -43,6 +43,11 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordRestExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false, //hide this from the output/user - only visible in the DB
+  },
 });
 
 //mongoose middleware
@@ -65,6 +70,13 @@ userSchema.pre('save', function (next) {
   //making passwordChangedAt to be sometimes set after the json webtoken has been created,
   // and that will not allow the user to login (passwordChangedAt - jwttimestamp)
   this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
+//looks for words that start with find, so it will run on all of them
+userSchema.pre(/^find/, function (next) {
+  //this points to the current query
+  this.find({ active: { $ne: false } }); //this happens before all finds
   next();
 });
 
