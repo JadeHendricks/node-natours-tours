@@ -17,6 +17,22 @@ const createSendToken = (user, statusCode, res) => {
   //the token header will be created automatically
   const token = signToken(user._id);
 
+  //creating a cookie
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ), //the browser/client will delete the cookie
+    httpOnly: true, //makes sure that the browser cannot modify the cookie (security/ scripting attacks)
+  };
+
+  //cookie will only be sent on a encrypted connection HTTPS
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  //takes, name, data, options
+  res.cookie('jwt', token, cookieOptions);
+  //remove the password from output, just sending not saving to the DB
+  user.password = undefined;
+
   //pass the token back to automatically log in the user
   //because on register we do not ahve to check or match any data in the database, this is only done on login
   res.status(statusCode).json({

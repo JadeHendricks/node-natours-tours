@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minLength: 8,
-    select: false, //hide this from the output/user - only visible in the DB
+    select: false, //hide this from the output/user/queries - only visible in the DB
   },
   passwordConfirm: {
     type: String,
@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true,
-    select: false, //hide this from the output/user - only visible in the DB
+    select: false, //hide this from the output/user/queries - only visible in the DB
   },
 });
 
