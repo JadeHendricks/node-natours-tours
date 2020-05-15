@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
+const hpp = require('hpp');
 //upon calling express() it will give us a bunch of methods to use
 const app = express();
 const tourRouter = require('./routes/tourRoutes');
@@ -46,7 +47,24 @@ app.use(mongoSanitize());
 
 //Data sanitization against XSS
 //prevents malicious html with some js attached to it, converts all those html symbols
+//returns a middleware function
 app.use(xss());
+
+//Preventing parameter pollution
+//good to use at the end because it will clear up the query string after everything has run before it
+//returns a middleware function
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingQuantity',
+      'ratingsAverage',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ], //we can allow duplicates to be passed via a whitelist
+  })
+);
 
 //serving static files
 app.use(express.static(`${__dirname}/public`));
