@@ -2,15 +2,27 @@ const express = require('express');
 const morgan = require('morgan');
 const AppError = require('./utilities/appError');
 const globalErrorHandler = require('./controllers/errorController');
+const rateLimit = require('express-rate-limit');
 //upon calling express() it will give us a bunch of methods to use
 const app = express();
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 
-//middleware
+//Global middlewares
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+//rate limiting - this is a middleware function
+// 100 requests per hour
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please try again in an hour!',
+});
+//work on all api routes
+app.use('/api', limiter);
+
 //a function that can modify the incoming request data
 //express. json() is a method inbuilt in express to recognize the incoming Request Object as a JSON Object so we can access the req.body
 app.use(express.json());
