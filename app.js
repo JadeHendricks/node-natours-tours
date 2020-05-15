@@ -3,17 +3,26 @@ const morgan = require('morgan');
 const AppError = require('./utilities/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 //upon calling express() it will give us a bunch of methods to use
 const app = express();
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 
 //Global middlewares
+//=============================================================================
+
+//setting security HTTP headers with helmet
+//helmet will return a middleware function and will sit there until it is called
+//best ti use helmet early in the middleware stack to make sure these headers will be set
+app.use(helmet());
+
+//Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-//rate limiting - this is a middleware function
+//Rate limiting from the same API - this is a middleware function
 // 100 requests per hour
 const limiter = rateLimit({
   max: 100,
@@ -23,9 +32,12 @@ const limiter = rateLimit({
 //work on all api routes
 app.use('/api', limiter);
 
+//Body parser, reading data from body into req.body
 //a function that can modify the incoming request data
 //express. json() is a method inbuilt in express to recognize the incoming Request Object as a JSON Object so we can access the req.body
-app.use(express.json());
+app.use(express.json({ limit: '10kb' })); //will not accept a body bigger than 10kb
+
+//serving static files
 app.use(express.static(`${__dirname}/public`));
 
 app.use((req, res, next) => {
