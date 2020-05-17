@@ -34,7 +34,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
 exports.getTour = catchAsync(async (req, res, next) => {
   //we want to populate the guides in the tourModel with the data that being referenced, only in the query and not in the actual DB
-  const tour = await Tour.findById(req.params.id);
+  const tour = await Tour.findById(req.params.id).populate('reviews');
 
   if (!tour) {
     //create an error and pass it to next, as soon as next recieves a value it will assume it is a error

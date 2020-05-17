@@ -123,6 +123,15 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
+//virtual populate
+//a way of storing data into another collection but noy persisting it to a DB
+//takes in a virtual field and options
+tourSchema.virtual('reviews', {
+  ref: 'Review', //the model we want to reference
+  foreignField: 'tour', //this is the name of the field in the review model, where the reference to the current model is stored (tour from review model)
+  localField: '_id', //this _id is called tour in the foreign model
+});
+
 //mongoose middleware, document middleware: runs before a create() save() only
 tourSchema.pre('save', function (next) {
   //this is going to point to the currently processed document
