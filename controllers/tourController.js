@@ -33,6 +33,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 });
 
 exports.getTour = catchAsync(async (req, res, next) => {
+  //we want to populate the guides in the tourModel with the data that being referenced, only in the query and not in the actual DB
   const tour = await Tour.findById(req.params.id);
 
   if (!tour) {
@@ -46,10 +47,6 @@ exports.getTour = catchAsync(async (req, res, next) => {
     data: {
       tour: tour,
     },
-  });
-  res.status(404).json({
-    status: 'fail',
-    message: error,
   });
 });
 
