@@ -1,6 +1,6 @@
 const Review = require('../models/reviewModel');
 const catchAsync = require('../utilities/catchAsync');
-const AppError = require('../utilities/appError');
+const factory = require('./handlerFactory');
 
 //this will also get called automatically when we create a review on the tour, because of the mounted router in tourRoutes
 exports.getAllReviews = catchAsync(async (req, res, next) => {
@@ -32,3 +32,5 @@ exports.createReview = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.deleteReview = factory.deleteOne(Review);
