@@ -12,6 +12,14 @@ const {
   deleteTour,
 } = require('../controllers/tourController');
 
+const reviewRouter = require('../routes/reviewRoutes');
+
+//mounting a router
+//we are saying here, that the tour router should use the review router if it encounters this endpoint
+//the review router doesn't get access to the tourId, we do that in reviewRoutes.js with merge params
+//this will now hit .route('/')
+router.use('/:tourId/reviews', reviewRouter);
+
 // router.param("id", checkID);
 
 router.route('/top-5-tours').get(aliasTopTours, getAllTours);

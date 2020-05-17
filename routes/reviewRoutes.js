@@ -1,5 +1,7 @@
 const express = require('express');
-const router = express.Router();
+//by default each router only has access to their specific parameters
+//but '/' this does not have a tourId so we use merge params in order to access toursId from tourRoutes
+const router = express.Router({ mergeParams: true });
 const { protect, restrictTo } = require('../controllers/authController');
 const {
   getAllReviews,
