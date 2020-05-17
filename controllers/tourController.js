@@ -1,10 +1,14 @@
 const Tour = require('../models/tourModel');
 const catchAsync = require('../utilities/catchAsync');
-const APIFeatures = require('../utilities/apiFeatures');
-const AppError = require('../utilities/appError');
 const factory = require('./handlerFactory');
 //Blocking Code - Testing
 // const tours = JSON.parse(fileSystem.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`));
+
+exports.getAllTours = factory.getAll(Tour);
+exports.getTour = factory.getOne(Tour, { path: 'reviews' });
+exports.createTour = factory.createOne(Tour);
+exports.updateTour = factory.updateOne(Tour);
+exports.deleteTour = factory.deleteOne(Tour);
 
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = '5';
@@ -13,88 +17,6 @@ exports.aliasTopTours = (req, res, next) => {
 
   next();
 };
-
-exports.getAllTours = catchAsync(async (req, res, next) => {
-  //Execute Query
-  const features = new APIFeatures(Tour.find(), req.query)
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
-
-  const tours = await features.query;
-
-  res.status(200).json({
-    status: 'success',
-    results: tours.length,
-    data: {
-      tours: tours,
-    },
-  });
-});
-
-exports.getTour = catchAsync(async (req, res, next) => {
-  //we want to populate the guides in the tourModel with the data that being referenced, only in the query and not in the actual DB
-  const tour = await Tour.findById(req.params.id).populate('reviews');
-
-  if (!tour) {
-    //create an error and pass it to next, as soon as next recieves a value it will assume it is a error
-    return next(new AppError('No tour found with that ID', 404));
-  }
-
-  //Tour.findOne({ _id: req.params.id });
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour: tour,
-    },
-  });
-});
-
-exports.createTour = catchAsync(async (req, res, next) => {
-  const newTour = await Tour.create(req.body);
-  res.status(201).json({
-    status: 'success',
-    data: {
-      tour: newTour,
-    },
-  });
-});
-
-exports.updateTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true, // to return the new updated document
-    runValidators: true, //tells the validators in the schema to run again
-  });
-
-  if (!tour) {
-    //create an error and pass it to next, as soon as next recieves a value it will assume it is a error
-    return next(new AppError('No tour found with that ID', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour: tour,
-    },
-  });
-});
-
-// exports.deleteTour = catchAsync(async (req, res, next) => {
-//   const tour = await Tour.findByIdAndDelete(req.params.id);
-
-//   if (!tour) {
-//     //create an error and pass it to next, as soon as next recieves a value it will assume it is a error
-//     return next(new AppError('No tour found with that ID', 404));
-//   }
-
-//   res.status(204).json({
-//     status: 'success',
-//     data: null,
-//   });
-// });
-
-exports.deleteTour = factory.deleteOne(Tour);
 
 exports.getTourStats = catchAsync(async (req, res, next) => {
   const stats = await Tour.aggregate([
@@ -169,3 +91,82 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
     },
   });
 });
+// exports.getAllTours = catchAsync(async (req, res, next) => {
+//   //Execute Query
+//   const features = new APIFeatures(Tour.find(), req.query)
+//     .filter()
+//     .sort()
+//     .limitFields()
+//     .paginate();
+
+//   const tours = await features.query;
+
+//   res.status(200).json({
+//     status: 'success',
+//     results: tours.length,
+//     data: {
+//       tours: tours,
+//     },
+//   });
+// });
+
+// exports.getTour = catchAsync(async (req, res, next) => {
+//   //we want to populate the guides in the tourModel with the data that being referenced, only in the query and not in the actual DB
+//   const tour = await Tour.findById(req.params.id).populate('reviews');
+
+//   if (!tour) {
+//     //create an error and pass it to next, as soon as next recieves a value it will assume it is a error
+//     return next(new AppError('No tour found with that ID', 404));
+//   }
+
+//   //Tour.findOne({ _id: req.params.id });
+//   res.status(200).json({
+//     status: 'success',
+//     data: {
+//       tour: tour,
+//     },
+//   });
+// });
+
+// exports.createTour = catchAsync(async (req, res, next) => {
+//   const newTour = await Tour.create(req.body);
+//   res.status(201).json({
+//     status: 'success',
+//     data: {
+//       tour: newTour,
+//     },
+//   });
+// });
+
+// exports.updateTour = catchAsync(async (req, res, next) => {
+//   const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+//     new: true, // to return the new updated document
+//     runValidators: true, //tells the validators in the schema to run again
+//   });
+
+//   if (!tour) {
+//     //create an error and pass it to next, as soon as next recieves a value it will assume it is a error
+//     return next(new AppError('No tour found with that ID', 404));
+//   }
+
+//   res.status(200).json({
+//     status: 'success',
+//     data: {
+//       tour: tour,
+//     },
+//   });
+// });
+
+// exports.deleteTour = catchAsync(async (req, res, next) => {
+//   const tour = await Tour.findByIdAndDelete(req.params.id);
+
+//   if (!tour) {
+//     //create an error and pass it to next, as soon as next recieves a value it will assume it is a error
+//     return next(new AppError('No tour found with that ID', 404));
+//   }
+
+//   res.status(204).json({
+//     status: 'success',
+//     data: null,
+//   });
+// });
