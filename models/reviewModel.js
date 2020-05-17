@@ -33,5 +33,16 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
+reviewSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'tour', //name of the field we want to replace
+    select: 'name', // only get the name and nothing else
+  }).populate({
+    path: 'user', //name of the field we want to replace
+    select: 'name photo', // only get the name and photo
+  });
+  next();
+});
+
 const Review = mongoose.model('Review', reviewSchema);
 module.exports = Review;

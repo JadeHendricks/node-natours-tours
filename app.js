@@ -11,6 +11,7 @@ const hpp = require('hpp');
 const app = express();
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewRoutes');
 
 //Global middlewares
 //=============================================================================
@@ -79,6 +80,7 @@ app.use((req, res, next) => {
 //this is know as mounting the router
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 //this will only work if it did not reach any of our routers above, because this runs after.
 //handle all http methods in one handler
