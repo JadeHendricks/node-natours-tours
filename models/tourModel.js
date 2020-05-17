@@ -113,7 +113,7 @@ const tourSchema = new mongoose.Schema(
     ],
   },
   {
-    toJSON: { virtuals: true },
+    toJSON: { virtuals: true }, //show virtual data, aka field not in the db, but fields that show from calculations or on query
     toObject: { virtuals: true },
   }
 );
