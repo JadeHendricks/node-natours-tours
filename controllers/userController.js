@@ -12,6 +12,13 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
+exports.getMe = (req, res, next) => {
+  // req.params.id the get one factory function is gonna use this, so we need to change it to the user that we are logged in with
+  // the protect middleware adds the req.user.id because fo the token
+  req.params.id = req.user.id;
+  next();
+};
+
 //Do not update passwords with this (updateOne)
 exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User);

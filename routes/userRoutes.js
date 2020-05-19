@@ -8,6 +8,7 @@ const {
   deleteUser,
   updateMe,
   deleteMe,
+  getMe,
 } = require('../controllers/userController');
 const {
   signup,
@@ -25,6 +26,9 @@ router.post('/forgotPassword', forgotPassword);
 router.patch('/resetPassword/:token', resetPassword);
 
 router.patch('/updateMyPassword', protect, updatePassword);
+//settign the user,id in the the params id, that's why we camm, getMe and then getUser in that order
+// faking like the id is coming from the URL when it is actually not
+router.get('/me', protect, getMe, getUser);
 router.patch('/updateMe', protect, updateMe);
 router.delete('/deleteMe', protect, deleteMe);
 
