@@ -34,6 +34,14 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
+//each combination of tour and user always has to be unique IS BEING SET HERE
+reviewSchema.index(
+  { tour: 1, user: 1 },
+  {
+    unique: true,
+  }
+);
+
 reviewSchema.pre(/^find/, function (next) {
   // this.populate({
   //   path: 'tour', //name of the field we want to replace
@@ -66,7 +74,7 @@ reviewSchema.statics.calcAverageRatings = async function (tourId) {
       },
     },
   ]);
-  console.log(stats);
+
   //find the current tour by Id and update it
   if (stats.length > 0) {
     await Tour.findByIdAndUpdate(tourId, {
