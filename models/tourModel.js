@@ -118,6 +118,10 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+//indexing for quicker querying, by ordering them
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 //not part of the DB, gets added to the response
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
