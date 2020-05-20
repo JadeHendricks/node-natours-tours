@@ -1,6 +1,7 @@
 const Tour = require('../models/tourModel');
 const catchAsync = require('../utilities/catchAsync');
 const factory = require('./handlerFactory');
+const AppError = require('../utilities/appError');
 //Blocking Code - Testing
 // const tours = JSON.parse(fileSystem.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`));
 
@@ -91,6 +92,88 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  //getting the co-ordinates
+  const [lat, lng] = latlng.split(',');
+  //getting radiants from the radius by dividing it by the radius of the earth
+  const radius = unit === 'miles' ? distance / 3963.2 : distance / 6378.1;
+
+  if (!lat || !lng) {
+    next(
+      new AppError(
+        'Please provide a latitude and longitude in the format lat,lng',
+        400
+      )
+    );
+  }
+
+  //time to write a geospatial query
+  //startLocation + the value that we are searching for
+  //geoWithin - finds documents within a certain geometry
+  //centerSphere takes in an array of the co-ordinates and the radius
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
+});
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  //getting the co-ordinates
+  const [lat, lng] = latlng.split(',');
+  const multiplier = unit === 'miles' ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
+    next(
+      new AppError(
+        'Please provide a latitude and longitude in the format lat,lng',
+        400
+      )
+    );
+  }
+
+  //geoNear is the only geospatial pipeline that actually exsists
+  //and it always needs to be the first in the pipeline
+  //geoNear requires one of our fields to have a geospacial index (startLocation)
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        //the start point from which to calculate the distances
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1],
+        },
+        //this is the name of the field that will be created and where all calculated distances will be stored
+        distanceField: 'distance',
+        distanceMultiplier: multiplier, //changing result from metres to km or miles
+      },
+    },
+    {
+      //add in the name of the fields that you want to keep only (show in res)
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: distances,
+    },
+  });
+});
+
 // exports.getAllTours = catchAsync(async (req, res, next) => {
 //   //Execute Query
 //   const features = new APIFeatures(Tour.find(), req.query)
