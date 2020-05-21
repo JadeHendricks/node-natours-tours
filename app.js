@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const AppError = require('./utilities/appError');
@@ -7,11 +8,19 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-//upon calling express() it will give us a bunch of methods to use
-const app = express();
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+//upon calling express() it will give us a bunch of methods to use
+const app = express();
+
+//setting the view engine
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
+//serving static files
+// app.use(express.static(`${__dirname}/public`));
+app.use(express.static(path.join(__dirname, 'public')));
 
 //Global middlewares
 //=============================================================================
@@ -67,15 +76,15 @@ app.use(
   })
 );
 
-//serving static files
-app.use(express.static(`${__dirname}/public`));
-
 app.use((req, res, next) => {
   req.requestTime = new Date().toString();
   //console.log(req.headers);
   next();
 });
 
+app.get('/', (req, res) => {
+  res.status(200).render('base');
+});
 //we create a new router and save it into a variable and that variable is now middleware
 //this is know as mounting the router
 app.use('/api/v1/tours', tourRouter);
