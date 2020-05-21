@@ -85,6 +85,18 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
   res.status(200).render('base');
 });
+
+app.get('/overview', (req, res) => {
+  res.status(200).render('overview', {
+    title: 'All tours',
+  });
+});
+
+app.get('/tours', (req, res) => {
+  res.status(200).render('tour', {
+    title: 'The Forest Hiker Tour',
+  });
+});
 //we create a new router and save it into a variable and that variable is now middleware
 //this is know as mounting the router
 app.use('/api/v1/tours', tourRouter);
