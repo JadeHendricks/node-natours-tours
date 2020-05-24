@@ -83,10 +83,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', (req, res) => {
-  res.status(200).render('base');
-});
-
 //we create a new router and save it into a variable and that variable is now middleware
 //this is know as mounting the router
 app.use('/', viewRouter);
