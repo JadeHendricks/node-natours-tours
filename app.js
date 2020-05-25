@@ -8,12 +8,37 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
+
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
 //upon calling express() it will give us a bunch of methods to use
 const app = express();
+
+/*
+ * CORS
+ */
+/*
+ * Create a whitelist of domain allowed
+ * Whitelisted domain can be save on a file rather than a collection as we are
+ * yet to initialize the app, however it was a bit too much to do right now.
+ * BTW: http://localhost:1234 is where parceljs runs you packaged HTML project
+ */
+const whitelist = ['http://localhost:3000'];
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', whitelist);
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With,Content-Type,Accept,Authorization'
+  );
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PATCH,PUT');
+    return res.status(200).json({});
+  }
+  next();
+});
 
 //setting the view engine
 app.set('view engine', 'pug');
@@ -50,6 +75,7 @@ app.use('/api', limiter);
 //a function that can modify the incoming request data
 //express. json() is a method inbuilt in express to recognize the incoming Request Object as a JSON Object so we can access the req.body
 app.use(express.json({ limit: '10kb' })); //will not accept a body bigger than 10kb
+app.use(cookieParser()); //passes the data from cookies in the browser
 
 //Data sanitization against noSql query injection
 //looks at the request body, request query string and also at request.params and will filter out all the $ and dots
