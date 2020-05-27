@@ -24,7 +24,7 @@ exports.setTourAndUserIds = (req, res, next) => {
 
 //   const reviews = await Review.find(filter);
 //   res.status(200).json({
-//     status: 'success',
+//     status: 'Success',
 //     results: reviews.length,
 //     data: {
 //       reviews,

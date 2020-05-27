@@ -42,7 +42,7 @@ exports.getTourStats = catchAsync(async (req, res, next) => {
   ]);
 
   res.status(200).json({
-    status: 'success',
+    status: 'Success',
     data: {
       stats,
     },
@@ -86,7 +86,7 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
   ]);
 
   res.status(200).json({
-    status: 'success',
+    status: 'Success',
     data: {
       plan,
     },
@@ -118,7 +118,7 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
   });
 
   res.status(200).json({
-    status: 'success',
+    status: 'Success',
     results: tours.length,
     data: {
       data: tours,
@@ -167,7 +167,7 @@ exports.getDistances = catchAsync(async (req, res, next) => {
   ]);
 
   res.status(200).json({
-    status: 'success',
+    status: 'Success',
     data: {
       data: distances,
     },
@@ -185,7 +185,7 @@ exports.getDistances = catchAsync(async (req, res, next) => {
 //   const tours = await features.query;
 
 //   res.status(200).json({
-//     status: 'success',
+//     status: 'Success',
 //     results: tours.length,
 //     data: {
 //       tours: tours,
@@ -204,7 +204,7 @@ exports.getDistances = catchAsync(async (req, res, next) => {
 
 //   //Tour.findOne({ _id: req.params.id });
 //   res.status(200).json({
-//     status: 'success',
+//     status: 'Success',
 //     data: {
 //       tour: tour,
 //     },
@@ -214,7 +214,7 @@ exports.getDistances = catchAsync(async (req, res, next) => {
 // exports.createTour = catchAsync(async (req, res, next) => {
 //   const newTour = await Tour.create(req.body);
 //   res.status(201).json({
-//     status: 'success',
+//     status: 'Success',
 //     data: {
 //       tour: newTour,
 //     },
@@ -233,7 +233,7 @@ exports.getDistances = catchAsync(async (req, res, next) => {
 //   }
 
 //   res.status(200).json({
-//     status: 'success',
+//     status: 'Success',
 //     data: {
 //       tour: tour,
 //     },
@@ -249,7 +249,7 @@ exports.getDistances = catchAsync(async (req, res, next) => {
 //   }
 
 //   res.status(204).json({
-//     status: 'success',
+//     status: 'Success',
 //     data: null,
 //   });
 // });

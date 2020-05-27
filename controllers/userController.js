@@ -48,7 +48,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 
   res.status(200).json({
-    status: 'success',
+    status: 'Success',
     data: {
       user: updatedUser,
     },
@@ -59,7 +59,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: false });
   res.status(204).json({
-    status: 'success',
+    status: 'Success',
     data: null,
   });
 });
@@ -75,7 +75,7 @@ exports.createUser = (req, res) => {
 //   const users = await User.find();
 
 //   res.status(200).json({
-//     status: 'success',
+//     status: 'Success',
 //     results: users.length,
 //     data: {
 //       tours: users,
