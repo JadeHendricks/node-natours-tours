@@ -39,3 +39,10 @@ exports.getLoginForm = (req, res) => {
     title: 'Log into your account',
   });
 };
+
+exports.getAccount = (req, res) => {
+  //we don't need to query for the current user, because that is already done via the protct middlware
+  res.status(200).render('account', {
+    title: 'Your account',
+  });
+};
