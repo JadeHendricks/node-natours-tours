@@ -1,20 +1,23 @@
 const express = require('express');
+const viewsController = require('../controllers/viewsController');
+const authController = require('../controllers/authController');
+
 const router = express.Router();
-const { protect, isLoggedIn } = require('../controllers/authController');
 
-const {
-  getOverview,
-  getTour,
-  getLoginForm,
-  getAccount,
-} = require('../controllers/viewsController');
+router.use(viewsController.alerts);
 
-//this will run on every route below it
-// router.use(isLoggedIn);
+router.get('/', authController.isLoggedIn, viewsController.getOverview);
 
-router.get('/', isLoggedIn, getOverview);
-router.get('/tour/:slug', isLoggedIn, getTour);
-router.get('/login', isLoggedIn, getLoginForm);
-router.get('/me', protect, getAccount);
+router.get('/tour/:slug', authController.isLoggedIn, viewsController.getTour);
+router.get('/login', authController.isLoggedIn, viewsController.getLoginForm);
+router.get('/me', authController.protect, viewsController.getAccount);
+
+router.get('/my-tours', authController.protect, viewsController.getMyTours);
+
+router.post(
+  '/submit-user-data',
+  authController.protect,
+  viewsController.updateUserData
+);
 
 module.exports = router;

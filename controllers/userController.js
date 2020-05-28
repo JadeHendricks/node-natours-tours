@@ -1,121 +1,111 @@
-const User = require('../models/userModel');
-const catchAsync = require('../utilities/catchAsync');
-const AppError = require('../utilities/appError');
 const multer = require('multer');
+const sharp = require('sharp');
+const User = require('./../models/userModel');
+const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
 const factory = require('./handlerFactory');
 
-const multerStorage = multer.diskStorage({
-  destination: (req, file, callback) => {
-    //first argument is an error or if not just null, then the destination
-    callback(null, 'public/img/users');
-  },
-  filename: (req, file, callback) => {
-    //making the image names unique
-    //get the name of the current file
-    const extension = file.mimetype.split('/')[1];
-    //req.user.id = id of the currently logged in user
-    callback(null, `user-${req.user.id}-${Date.now()}.${extension}`);
-  },
-});
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'public/img/users');
+//   },
+//   filename: (req, file, cb) => {
+//     const ext = file.mimetype.split('/')[1];
+//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+//   }
+// });
+const multerStorage = multer.memoryStorage();
 
-//test if the uploaded file is an image
-const multerFilter = (req, file, callback) => {
+const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image')) {
-    callback(null, true);
+    cb(null, true);
   } else {
-    callback(
-      new AppError('Not an image! Please upload only images', 400),
-      false
-    );
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
   }
 };
 
-//configure a multer upload
 const upload = multer({
   storage: multerStorage,
-  fileFilter: multerFilter,
+  fileFilter: multerFilter
 });
 
 exports.uploadUserPhoto = upload.single('photo');
 
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
+  if (!req.file) return next();
+
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.filename}`);
+
+  next();
+});
+
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
-  Object.keys(obj).forEach((el) => {
+  Object.keys(obj).forEach(el => {
     if (allowedFields.includes(el)) newObj[el] = obj[el];
   });
-
   return newObj;
 };
 
 exports.getMe = (req, res, next) => {
-  // req.params.id the get one factory function is gonna use this, so we need to change it to the user that we are logged in with
-  // the protect middleware adds the req.user.id because fo the token
   req.params.id = req.user.id;
   next();
 };
 
-//Do not update passwords with this (updateOne)
-exports.updateUser = factory.updateOne(User);
-exports.deleteUser = factory.deleteOne(User);
-exports.getUser = factory.getOne(User);
-exports.getAllUsers = factory.getAll(User);
-
 exports.updateMe = catchAsync(async (req, res, next) => {
-  // 1) Create an error if the user tries to update the password
+  // 1) Create error if user POSTs password data
   if (req.body.password || req.body.passwordConfirm) {
     return next(
       new AppError(
-        'This route is not for password updates, please use /updateMyPassword',
+        'This route is not for password updates. Please use /updateMyPassword.',
         400
       )
     );
   }
 
-  //2) Filter out unwanted field names, that are not allowed to be updated
-  //body.role='admin' - prevent this  with "filteredBody"
+  // 2) Filtered out unwanted fields names that are not allowed to be updated
   const filteredBody = filterObj(req.body, 'name', 'email');
-  //if there is a req.file we can use it here to update it to the db via filteredBody
   if (req.file) filteredBody.photo = req.file.filename;
 
-  //3) Update the user document
-  //we can use findByIdAndUpdate, because we are not working with sensitive data here, takes in the ID: DATA to change: Options
+  // 3) Update user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
-    new: true, // returns the new updated object instead of the old one
-    runValidators: true,
+    new: true,
+    runValidators: true
   });
 
   res.status(200).json({
-    status: 'Success',
+    status: 'success',
     data: {
-      user: updatedUser,
-    },
+      user: updatedUser
+    }
   });
 });
 
-//deactivate users account
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: false });
+
   res.status(204).json({
-    status: 'Success',
-    data: null,
+    status: 'success',
+    data: null
   });
 });
 
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: 'error',
-    message: 'This route is not defined! Please use /signup instead',
+    message: 'This route is not defined! Please use /signup instead'
   });
 };
 
-// exports.getAllUsers = catchAsync(async (req, res, next) => {
-//   const users = await User.find();
+exports.getUser = factory.getOne(User);
+exports.getAllUsers = factory.getAll(User);
 
-//   res.status(200).json({
-//     status: 'Success',
-//     results: users.length,
-//     data: {
-//       tours: users,
-//     },
-//   });
-// });
+// Do NOT update passwords with this!
+exports.updateUser = factory.updateOne(User);
+exports.deleteUser = factory.deleteOne(User);

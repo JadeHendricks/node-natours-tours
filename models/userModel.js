@@ -1,127 +1,117 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Please tell use your name!'],
+    required: [true, 'Please tell us your name!']
   },
   email: {
     type: String,
-    unique: true,
     required: [true, 'Please provide your email'],
-    validator: [validator.isEmail, 'Please provide a valid email'],
+    unique: true,
     lowercase: true,
+    validate: [validator.isEmail, 'Please provide a valid email']
   },
   photo: {
     type: String,
-    default: 'default.jpg',
+    default: 'default.jpg'
   },
   role: {
     type: String,
-    enum: ['user', 'guide', 'lead-guid', 'admin'], //these are the only things allowed
-    default: 'user',
+    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    default: 'user'
   },
   password: {
     type: String,
     required: [true, 'Please provide a password'],
-    minLength: 8,
-    select: false, //hide this from the output/user/queries - only visible in the DB
+    minlength: 8,
+    select: false
   },
   passwordConfirm: {
     type: String,
     required: [true, 'Please confirm your password'],
     validate: {
-      //custom validators only works on save and create, not on update etc
-      validator: function (el) {
-        return el === this.password; //el aka passwordConfirm
+      // This only works on CREATE and SAVE!!!
+      validator: function(el) {
+        return el === this.password;
       },
-      message: 'Passwords are not the same',
-    },
+      message: 'Passwords are not the same!'
+    }
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
-  passwordRestExpires: Date,
+  passwordResetExpires: Date,
   active: {
     type: Boolean,
     default: true,
-    select: false, //hide this from the output/user/queries - only visible in the DB
-  },
+    select: false
+  }
 });
 
-//mongoose middleware
-userSchema.pre('save', async function (next) {
-  //this refers to the current document in question
-  //if the password has not been modified
+userSchema.pre('save', async function(next) {
+  // Only run this function if password was actually modified
   if (!this.isModified('password')) return next();
 
-  //salt means that it's going to add a random string to the password, so that 2 equal passwords do not generate the same hash
+  // Hash the password with cost of 12
   this.password = await bcrypt.hash(this.password, 12);
-  this.passwordConfirm = undefined; //DELETE - only needed for validation, required input but not required in the db
+
+  // Delete passwordConfirm field
+  this.passwordConfirm = undefined;
   next();
 });
 
-//update changedPasswordAt property to right now for user
-userSchema.pre('save', function (next) {
+userSchema.pre('save', function(next) {
   if (!this.isModified('password') || this.isNew) return next();
 
-  //we use -1000 here just incase saving to the DB is abit slower than issuing the jwt,
-  //making passwordChangedAt to be sometimes set after the json webtoken has been created,
-  // and that will not allow the user to login (passwordChangedAt - jwttimestamp)
   this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
-//looks for words that start with find, so it will run on all of them
-userSchema.pre(/^find/, function (next) {
-  //this points to the current query
-  this.find({ active: { $ne: false } }); //this happens before all finds
+userSchema.pre(/^find/, function(next) {
+  // this points to the current query
+  this.find({ active: { $ne: false } });
   next();
 });
 
-//instance method
-// a method that's going to be available in all documents of user
-//Check if password received and password in the DB matches
-userSchema.methods.correctPassword = async function (
+userSchema.methods.correctPassword = async function(
   candidatePassword,
   userPassword
 ) {
-  //this points to the current document, but password is not available because of select: false
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-//checking to see whether the user has changed the password after recieving the Token
-userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
-  //checks if that property exists for the user
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
       10
     );
-    //console.log(changedTimestamp, JWTTimestamp);
+
     return JWTTimestamp < changedTimestamp;
   }
 
-  //false means not changed
+  // False means NOT changed
   return false;
 };
 
-//generating a token to send it via email during a password reset
-userSchema.methods.createPasswordResetToken = function () {
+userSchema.methods.createPasswordResetToken = function() {
   const resetToken = crypto.randomBytes(32).toString('hex');
+
   this.passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)
     .digest('hex');
 
-  console.log({ resetToken }, this.passwordResetToken);
+  // console.log({ resetToken }, this.passwordResetToken);
 
-  this.passwordRestExpires = Date.now() + 10 * 60 * 1000; //10mins
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);
+
 module.exports = User;

@@ -1,17 +1,13 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
-process.on('uncaughtException', (err) => {
-  console.log('UNCAUGHT EXCEPTION, Shutting down...');
+process.on('uncaughtException', err => {
+  console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
   console.log(err.name, err.message);
-  // give the server some time to finish all requests that are still pending
   process.exit(1);
 });
 
-//only needs to happen once to use globally and before app
-// console.log(process.env);
 dotenv.config({ path: './config.env' });
-
 const app = require('./app');
 
 const DB = process.env.DATABASE.replace(
@@ -19,28 +15,30 @@ const DB = process.env.DATABASE.replace(
   process.env.DATABASE_PASSWORD
 );
 
-//Takes the connection string and some options
 mongoose
   .connect(DB, {
     useNewUrlParser: true,
     useCreateIndex: true,
-    useFindAndModify: false,
+    useFindAndModify: false
   })
-  .then((connectionOBJ) => console.log('DB connection successful'));
+  .then(() => console.log('DB connection successful!'));
 
-//starting file, listen to our server from this file
-//starting a server
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
   console.log(`App running on port ${port}...`);
 });
 
-//handling all unhandled rejections in one spot
-process.on('unhandledRejection', (err) => {
+process.on('unhandledRejection', err => {
+  console.log('UNHANDLED REJECTION! 💥 Shutting down...');
   console.log(err.name, err.message);
-  console.log('UNHANDLED REJECTION, Shutting down...');
-  // give the server some time to finish all requests that are still pending
   server.close(() => {
     process.exit(1);
+  });
+});
+
+process.on('SIGTERM', () => {
+  console.log('👋 SIGTERM RECEIVED. Shutting down gracefully');
+  server.close(() => {
+    console.log('💥 Process terminated!');
   });
 });
