@@ -10,6 +10,7 @@ const {
   updateMe,
   deleteMe,
   getMe,
+  uploadUserPhoto,
 } = require('../controllers/userController');
 const {
   signup,
@@ -35,7 +36,7 @@ router.patch('/updateMyPassword', updatePassword);
 //settign the user,id in the the params id, that's why we camm, getMe and then getUser in that order
 // faking like the id is coming from the URL when it is actually not
 router.get('/me', getMe, getUser);
-router.patch('/updateMe', updateMe);
+router.patch('/updateMe', uploadUserPhoto, updateMe);
 router.delete('/deleteMe', deleteMe);
 
 router.use(restrictTo('admin'));

@@ -1,7 +1,42 @@
 const User = require('../models/userModel');
 const catchAsync = require('../utilities/catchAsync');
 const AppError = require('../utilities/appError');
+const multer = require('multer');
 const factory = require('./handlerFactory');
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, callback) => {
+    //first argument is an error or if not just null, then the destination
+    callback(null, 'public/img/users');
+  },
+  filename: (req, file, callback) => {
+    //making the image names unique
+    //get the name of the current file
+    const extension = file.mimetype.split('/')[1];
+    //req.user.id = id of the currently logged in user
+    callback(null, `user-${req.user.id}-${Date.now()}.${extension}`);
+  },
+});
+
+//test if the uploaded file is an image
+const multerFilter = (req, file, callback) => {
+  if (file.mimetype.startsWith('image')) {
+    callback(null, true);
+  } else {
+    callback(
+      new AppError('Not an image! Please upload only images', 400),
+      false
+    );
+  }
+};
+
+//configure a multer upload
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+exports.uploadUserPhoto = upload.single('photo');
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -39,6 +74,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   //2) Filter out unwanted field names, that are not allowed to be updated
   //body.role='admin' - prevent this  with "filteredBody"
   const filteredBody = filterObj(req.body, 'name', 'email');
+  //if there is a req.file we can use it here to update it to the db via filteredBody
+  if (req.file) filteredBody.photo = req.file.filename;
 
   //3) Update the user document
   //we can use findByIdAndUpdate, because we are not working with sensitive data here, takes in the ID: DATA to change: Options
